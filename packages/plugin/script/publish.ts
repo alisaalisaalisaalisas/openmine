@@ -10,6 +10,8 @@ await $`bun tsc`
 const pkg = await import("../package.json").then((m) => m.default)
 const original = JSON.parse(JSON.stringify(pkg))
 for (const [key, value] of Object.entries(pkg.exports)) {
+  // Skip if value is already an object (already processed format)
+  if (typeof value !== "string") continue
   const file = value.replace("./src/", "./dist/").replace(".ts", "")
   // @ts-ignore
   pkg.exports[key] = {
@@ -19,5 +21,6 @@ for (const [key, value] of Object.entries(pkg.exports)) {
 }
 await Bun.write("package.json", JSON.stringify(pkg, null, 2))
 await $`npm pack`
-await $`npm publish *.tgz --tag ${Script.channel} --access public`
+const tgzName = `${pkg.name.replace("@", "").replace("/", "-")}-${pkg.version}.tgz`
+await $`npm publish ${tgzName} --tag ${Script.channel} --access public`
 await Bun.write("package.json", JSON.stringify(original, null, 2))

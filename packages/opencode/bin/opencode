@@ -52,6 +52,7 @@ function findBinary(startDir) {
   for (;;) {
     const modules = path.join(current, "node_modules")
     if (fs.existsSync(modules)) {
+      // Check for unscoped packages first
       const entries = fs.readdirSync(modules)
       for (const entry of entries) {
         if (!entry.startsWith(base)) {
@@ -60,6 +61,20 @@ function findBinary(startDir) {
         const candidate = path.join(modules, entry, "bin", binary)
         if (fs.existsSync(candidate)) {
           return candidate
+        }
+      }
+      // Check for scoped packages under @alisasasasaasas/
+      const scopedDir = path.join(modules, "@alisasasasaasas")
+      if (fs.existsSync(scopedDir)) {
+        const scopedEntries = fs.readdirSync(scopedDir)
+        for (const entry of scopedEntries) {
+          if (!entry.startsWith(base)) {
+            continue
+          }
+          const candidate = path.join(scopedDir, entry, "bin", binary)
+          if (fs.existsSync(candidate)) {
+            return candidate
+          }
         }
       }
     }

@@ -127,6 +127,18 @@ export namespace BunProc {
 
     await runInstall()
 
+    // Run bun install to ensure all transitive dependencies are properly installed
+    log.info("running bun install to ensure all dependencies are resolved", {
+      pkg,
+      version,
+    })
+    await BunProc.run(["install", "--cwd", Global.Path.cache], {
+      cwd: Global.Path.cache,
+    }).catch((error) => {
+      log.warn("bun install for dependencies failed", { pkg, version, error })
+      // Don't throw here - the package itself was added, deps might still work
+    })
+
     // Resolve actual version from installed package when using "latest"
     // This ensures subsequent starts use the cached version until explicitly updated
     let resolvedVersion = version
